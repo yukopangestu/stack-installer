@@ -82,11 +82,48 @@ display_menu() {
     echo ""
 }
 
+# Function to select environment type
+select_environment() {
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}   Select Environment Type:${NC}"
+    echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+    echo ""
+    echo -e "  ${GREEN}1)${NC} Development Environment"
+    echo -e "     ${YELLOW}→${NC} Includes all dev tools, relaxed security, easier debugging"
+    echo ""
+    echo -e "  ${GREEN}2)${NC} Production Environment"
+    echo -e "     ${YELLOW}→${NC} Optimized performance, enhanced security, production-ready"
+    echo ""
+    echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
+    echo ""
+
+    while true; do
+        read -p "Enter your choice [1-2]: " env_choice
+        case $env_choice in
+            1)
+                INSTALL_ENV="development"
+                print_info "Selected: Development Environment"
+                return 0
+                ;;
+            2)
+                INSTALL_ENV="production"
+                print_info "Selected: Production Environment"
+                return 0
+                ;;
+            *)
+                print_error "Invalid choice. Please enter 1 or 2."
+                ;;
+        esac
+    done
+}
+
 # Function to confirm installation
 confirm_installation() {
     local stack_name=$1
     echo ""
     echo -e "${YELLOW}You are about to install: ${GREEN}$stack_name${NC}"
+    echo -e "${YELLOW}Environment: ${GREEN}$INSTALL_ENV${NC}"
     echo -e "${YELLOW}This will install multiple packages and may take several minutes.${NC}"
     echo ""
     read -p "Do you want to continue? (y/n): " -n 1 -r
@@ -100,6 +137,9 @@ confirm_installation() {
 
 # Function to install MERN stack
 install_mern() {
+    # Select environment type first
+    select_environment
+
     if confirm_installation "MERN Stack"; then
         print_header "Starting MERN Stack Installation..."
         echo ""
@@ -107,7 +147,7 @@ install_mern() {
         # Check if install-mern.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
         if [ -f "$SCRIPT_DIR/install-mern.sh" ]; then
-            bash "$SCRIPT_DIR/install-mern.sh"
+            bash "$SCRIPT_DIR/install-mern.sh" "$INSTALL_ENV"
         else
             print_error "install-mern.sh not found in $SCRIPT_DIR"
             exit 1

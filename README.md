@@ -9,9 +9,13 @@ This repository contains bash scripts to quickly set up various development envi
 ## Features
 
 - Interactive menu-based installation
+- **Environment selection** (Development vs Production)
 - Automated dependency management
 - Latest package versions
 - NVM for Node.js version management
+- Production-ready security configurations
+- MongoDB authentication for production
+- PM2 process manager for production deployments
 - Color-coded output for better readability
 - Error handling and verification
 
@@ -78,20 +82,52 @@ sudo ./install.sh
 
 3. Enter the number corresponding to your desired stack
 
-4. Confirm the installation when prompted
+4. Choose your environment type:
+   - **Development**: Includes all dev tools, no authentication, easier for local development
+   - **Production**: Optimized settings, MongoDB authentication enabled, security hardened
 
-5. Wait for the installation to complete
+5. Confirm the installation when prompted
+
+6. Wait for the installation to complete
 
 ## MERN Stack Details
 
-The MERN stack installer (`install-mern.sh`) installs:
+The MERN stack installer (`install-mern.sh`) installs different configurations based on your environment choice:
 
-### Components:
+### Core Components (Both Environments):
 - **NVM (Node Version Manager)**: Latest version
 - **Node.js**: Latest LTS version via NVM
 - **npm**: Comes with Node.js
 - **MongoDB**: Version 8.0 (latest)
-- **Global npm packages**: create-react-app, express-generator, nodemon
+
+### Development Environment:
+**Global npm packages:**
+- `create-react-app` - React project scaffolding
+- `express-generator` - Express project scaffolding
+- `nodemon` - Auto-restart for development
+
+**Configuration:**
+- MongoDB: No authentication (easier for local development)
+- NODE_ENV: development (default)
+- All development tools included
+
+### Production Environment:
+**Global npm packages:**
+- `pm2` - Production process manager for Node.js
+- `express-generator` - Express project scaffolding
+
+**Configuration:**
+- MongoDB: Authentication ENABLED with auto-generated admin user
+- NODE_ENV: production
+- MongoDB credentials saved to `~/mongodb-credentials.txt`
+- Optimized for performance and security
+- Operation profiling enabled
+
+**Security Features:**
+- MongoDB authentication required
+- Bind to localhost only (127.0.0.1)
+- Strong random password generation
+- Secure credential storage
 
 ### Post-Installation:
 
@@ -112,11 +148,22 @@ nvm install --lts        # Install latest LTS
 
 # MongoDB commands
 sudo systemctl status mongod   # Check MongoDB status
-mongosh                        # Connect to MongoDB
+
+# Development: Connect without auth
+mongosh
+
+# Production: Connect with auth
+mongosh -u admin -p
+# Enter password from ~/mongodb-credentials.txt
 
 # Create a new MERN project
 npx create-react-app my-frontend
 express my-backend
+
+# Production: Use PM2 to manage your app
+pm2 start app.js
+pm2 list
+pm2 logs
 ```
 
 ## Individual Stack Installation
@@ -124,7 +171,13 @@ express my-backend
 You can also run individual stack installers directly:
 
 ```bash
-# MERN Stack only
+# MERN Stack - Development (default)
+sudo ./install-mern.sh development
+
+# MERN Stack - Production
+sudo ./install-mern.sh production
+
+# If no argument provided, defaults to development
 sudo ./install-mern.sh
 ```
 
@@ -154,6 +207,42 @@ sudo systemctl restart mongod
 Make sure you run the scripts with `sudo`:
 ```bash
 sudo ./install.sh
+```
+
+### MongoDB authentication issues (Production)
+If you can't connect to MongoDB after production installation:
+```bash
+# Use the admin credentials from the file
+cat ~/mongodb-credentials.txt
+
+# Connect with authentication
+mongosh -u admin -p
+# Enter the password when prompted
+
+# Or use connection string
+mongosh "mongodb://admin:<password>@localhost:27017/admin"
+```
+
+### Lost MongoDB credentials (Production)
+If you lost the credentials file:
+```bash
+# You'll need to disable auth temporarily
+sudo nano /etc/mongod.conf
+# Comment out the security section
+# security:
+#   authorization: enabled
+
+# Restart MongoDB
+sudo systemctl restart mongod
+
+# Create a new admin user
+mongosh
+use admin
+db.createUser({user: "newadmin", pwd: "newpassword", roles: ["root"]})
+exit
+
+# Re-enable authentication in /etc/mongod.conf
+# Restart MongoDB again
 ```
 
 ## Contributing
