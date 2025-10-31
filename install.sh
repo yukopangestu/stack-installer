@@ -76,6 +76,9 @@ display_menu() {
     echo -e "  ${GREEN}8)${NC} JAMstack"
     echo -e "     ${YELLOW}→${NC} Next.js + Node.js (via NVM) + Git"
     echo ""
+    echo -e "  ${GREEN}9)${NC} Docker"
+    echo -e "     ${YELLOW}→${NC} Docker Engine + Docker Compose + Container Tools"
+    echo ""
     echo -e "  ${RED}0)${NC} Exit"
     echo ""
     echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
@@ -155,6 +158,26 @@ install_mern() {
     fi
 }
 
+# Function to install Docker
+install_docker() {
+    # Select environment type first
+    select_environment
+
+    if confirm_installation "Docker"; then
+        print_header "Starting Docker Installation..."
+        echo ""
+
+        # Check if install-docker.sh exists
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        if [ -f "$SCRIPT_DIR/install-docker.sh" ]; then
+            bash "$SCRIPT_DIR/install-docker.sh" "$INSTALL_ENV"
+        else
+            print_error "install-docker.sh not found in $SCRIPT_DIR"
+            exit 1
+        fi
+    fi
+}
+
 # Function for not yet implemented stacks
 coming_soon() {
     local stack_name=$1
@@ -168,7 +191,7 @@ while true; do
     display_banner
     display_menu
 
-    read -p "Enter your choice [0-8]: " choice
+    read -p "Enter your choice [0-9]: " choice
 
     case $choice in
         1)
@@ -195,6 +218,9 @@ while true; do
         8)
             coming_soon "JAMstack"
             ;;
+        9)
+            install_docker
+            ;;
         0)
             echo ""
             print_success "Thank you for using Stack Installer!"
@@ -203,7 +229,7 @@ while true; do
             ;;
         *)
             echo ""
-            print_error "Invalid choice. Please enter a number between 0 and 8."
+            print_error "Invalid choice. Please enter a number between 0 and 9."
             echo ""
             sleep 2
             ;;

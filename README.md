@@ -29,6 +29,12 @@ This repository contains bash scripts to quickly set up various development envi
    - React (latest via create-react-app)
    - Node.js (latest LTS via NVM)
 
+9. **Docker** ✅
+   - Docker Engine (latest)
+   - Docker Compose Plugin
+   - Docker Compose Standalone
+   - Container management tools (ctop, dive, lazydocker)
+
 ### Coming Soon:
 
 2. **MEAN Stack** - MongoDB + Express.js + Angular + Node.js
@@ -166,6 +172,93 @@ pm2 list
 pm2 logs
 ```
 
+## Docker Details
+
+The Docker installer (`install-docker.sh`) installs different configurations based on your environment choice:
+
+### Core Components (Both Environments):
+- **Docker Engine**: Latest stable version
+- **Docker Compose Plugin**: Latest version
+- **Docker Compose Standalone**: Latest version (legacy support)
+- **containerd.io**: Container runtime
+- **Docker Buildx**: Build tool plugin
+
+### Development Environment:
+**Additional Tools:**
+- `lazydocker` - Terminal UI for Docker management
+
+**Configuration:**
+- Log rotation: 100MB max, 5 files (verbose logging for debugging)
+- Standard Docker settings
+- User added to docker group for non-root access
+
+### Production Environment:
+**Additional Tools:**
+- `ctop` - Real-time container monitoring
+- `dive` - Docker image layer analysis
+
+**Configuration:**
+- Log rotation: 10MB max, 3 files (optimized)
+- Live restore: ENABLED (containers survive daemon restart)
+- Enhanced security: userland-proxy disabled, no-new-privileges enabled
+- Container isolation: ICC (Inter-Container Communication) disabled
+- Resource limits: ulimits configured for production workloads
+
+**Security Features:**
+- Restricted container privileges
+- Optimized logging to prevent disk space issues
+- Production-ready daemon configuration
+- Security best practices applied
+
+### Post-Installation:
+
+After installation, you can:
+
+```bash
+# Check Docker version
+docker --version
+docker compose version
+
+# Test Docker installation
+docker run hello-world
+
+# List containers
+docker ps -a
+
+# List images
+docker images
+
+# Development: Use lazydocker for easy management
+lazydocker
+
+# Production: Monitor containers with ctop
+ctop
+
+# Production: Analyze image layers with dive
+dive <image-name>
+
+# Docker Compose commands
+docker compose up -d         # Start services in background
+docker compose down          # Stop and remove services
+docker compose logs -f       # Follow logs
+docker compose ps            # List running services
+docker compose restart       # Restart services
+
+# Container management
+docker stop <container>      # Stop a container
+docker start <container>     # Start a container
+docker rm <container>        # Remove a container
+docker exec -it <container> bash  # Access container shell
+
+# Image management
+docker pull <image>          # Download an image
+docker build -t myapp .      # Build an image
+docker rmi <image>           # Remove an image
+docker scan <image>          # Scan image for vulnerabilities (production)
+```
+
+**Important:** After installation, log out and log back in for group permissions to take effect. Then test with: `docker run hello-world`
+
 ## Individual Stack Installation
 
 You can also run individual stack installers directly:
@@ -177,8 +270,15 @@ sudo ./install-mern.sh development
 # MERN Stack - Production
 sudo ./install-mern.sh production
 
+# Docker - Development (default)
+sudo ./install-docker.sh development
+
+# Docker - Production
+sudo ./install-docker.sh production
+
 # If no argument provided, defaults to development
 sudo ./install-mern.sh
+sudo ./install-docker.sh
 ```
 
 ## Troubleshooting
@@ -245,6 +345,55 @@ exit
 # Restart MongoDB again
 ```
 
+### Docker permission denied (Development/Production)
+If you get "permission denied" when running Docker commands:
+```bash
+# Check if user is in docker group
+groups $USER
+
+# If not in docker group, add user
+sudo usermod -aG docker $USER
+
+# Log out and log back in, then test
+docker run hello-world
+```
+
+### Docker daemon not running
+If Docker commands fail with "Cannot connect to Docker daemon":
+```bash
+# Check Docker service status
+sudo systemctl status docker
+
+# Start Docker service
+sudo systemctl start docker
+
+# Enable Docker to start on boot
+sudo systemctl enable docker
+
+# Restart Docker service
+sudo systemctl restart docker
+```
+
+### lazydocker/ctop/dive not found
+If the additional tools aren't working:
+```bash
+# Check if they're installed
+which lazydocker
+which ctop
+which dive
+
+# If missing, manually install (example for lazydocker)
+curl -s https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+# For ctop
+sudo wget -q https://github.com/bcicen/ctop/releases/download/v0.7.7/ctop-0.7.7-linux-amd64 -O /usr/local/bin/ctop
+sudo chmod +x /usr/local/bin/ctop
+
+# For dive
+wget https://github.com/wagoodman/dive/releases/download/v0.11.0/dive_0.11.0_linux_amd64.deb
+sudo dpkg -i dive_0.11.0_linux_amd64.deb
+```
+
 ## Contributing
 
 Contributions are welcome! If you'd like to add support for additional stacks:
@@ -263,6 +412,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Uses [NVM](https://github.com/nvm-sh/nvm) for Node.js version management
 - MongoDB installation via official repositories
+- Docker installation via official Docker repositories
+- Docker management tools: [lazydocker](https://github.com/jesseduffield/lazydocker), [ctop](https://github.com/bcicen/ctop), [dive](https://github.com/wagoodman/dive)
 - Inspired by the need for quick development environment setup
 
 ## Support
