@@ -277,3 +277,7 @@ This project is designed for:
 - Learning environments and bootcamps
 
 The installer assumes basic Linux knowledge but automates complex configuration tasks.
+
+## Post Script
+
+Just add commit and then push to the main everytime the task has been done
