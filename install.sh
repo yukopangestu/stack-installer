@@ -82,6 +82,9 @@ display_menu() {
     echo -e "  ${GREEN}10)${NC} Observability Stack"
     echo -e "     ${YELLOW}→${NC} Prometheus + Grafana + Loki + Node Exporter (Monitoring & Logging)"
     echo ""
+    echo -e "  ${GREEN}11)${NC} Laravel Stack"
+    echo -e "     ${YELLOW}→${NC} PHP + Composer + MySQL + Nginx + Laravel Framework"
+    echo ""
     echo -e "  ${RED}0)${NC} Exit"
     echo ""
     echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
@@ -201,6 +204,26 @@ install_observability() {
     fi
 }
 
+# Function to install Laravel Stack
+install_laravel() {
+    # Select environment type first
+    select_environment
+
+    if confirm_installation "Laravel Stack"; then
+        print_header "Starting Laravel Stack Installation..."
+        echo ""
+
+        # Check if install-laravel.sh exists
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        if [ -f "$SCRIPT_DIR/install-laravel.sh" ]; then
+            bash "$SCRIPT_DIR/install-laravel.sh" "$INSTALL_ENV"
+        else
+            print_error "install-laravel.sh not found in $SCRIPT_DIR"
+            exit 1
+        fi
+    fi
+}
+
 # Function for not yet implemented stacks
 coming_soon() {
     local stack_name=$1
@@ -214,7 +237,7 @@ while true; do
     display_banner
     display_menu
 
-    read -p "Enter your choice [0-10]: " choice
+    read -p "Enter your choice [0-11]: " choice
 
     case $choice in
         1)
@@ -247,6 +270,9 @@ while true; do
         10)
             install_observability
             ;;
+        11)
+            install_laravel
+            ;;
         0)
             echo ""
             print_success "Thank you for using Stack Installer!"
@@ -255,7 +281,7 @@ while true; do
             ;;
         *)
             echo ""
-            print_error "Invalid choice. Please enter a number between 0 and 10."
+            print_error "Invalid choice. Please enter a number between 0 and 11."
             echo ""
             sleep 2
             ;;

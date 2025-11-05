@@ -42,6 +42,14 @@ This repository contains bash scripts to quickly set up various development envi
    - Promtail (log shipper)
    - Node Exporter (system metrics)
 
+11. **Laravel Stack** ✅
+   - PHP 8.3 with extensions
+   - Composer (dependency manager)
+   - MySQL 8.0
+   - Nginx web server
+   - Node.js (via NVM for asset compilation)
+   - Laravel framework
+
 ### Coming Soon:
 
 2. **MEAN Stack** - MongoDB + Express.js + Angular + Node.js
@@ -383,6 +391,171 @@ du -sh /var/lib/prometheus
 du -sh /var/lib/loki
 ```
 
+## Laravel Stack Details
+
+The Laravel Stack installer (`install-laravel.sh`) provides a complete PHP development environment with different configurations based on your environment choice:
+
+### Core Components (Both Environments):
+- **PHP 8.3**: Latest stable PHP with FPM (FastCGI Process Manager)
+- **Composer**: Dependency manager for PHP
+- **MySQL 8.0**: Relational database
+- **Nginx**: High-performance web server
+- **Node.js**: Via NVM for frontend asset compilation (Laravel Mix/Vite)
+- **Laravel**: Latest version of the Laravel framework
+
+### PHP Extensions Installed:
+- mbstring, xml, bcmath, curl, gd, mysql, zip, intl, readline, tokenizer
+
+### Development Environment:
+**Configuration:**
+- Xdebug: ENABLED (debugging and code coverage)
+- MySQL credentials: root/root, laravel/laravel
+- Error reporting: Verbose (APP_DEBUG=true)
+- Laravel environment: local
+- Sample Laravel project created at /var/www/laravel
+
+**Development Tools:**
+- Xdebug for step-through debugging
+- Verbose error messages
+- Easy database access (simple passwords)
+
+### Production Environment:
+**Configuration:**
+- OPcache: ENABLED (bytecode caching for performance)
+- MySQL: Strong auto-generated passwords
+- Error reporting: Production mode (APP_DEBUG=false)
+- Laravel environment: production
+- Supervisor: Queue worker management
+- Laravel Scheduler: Cron job configured
+- Credentials saved to `~/laravel-credentials.txt`
+
+**Production Tools:**
+- Supervisor for queue workers
+- Cron job for Laravel scheduler
+- OPcache for improved performance
+- Security hardened configurations
+
+**Security Features:**
+- Strong password generation (24-character random)
+- MySQL root and application user secured
+- Production error handling (no sensitive info exposed)
+- Secure credential storage (chmod 600)
+- Nginx security headers configured
+- PHP-FPM process isolation
+
+### Post-Installation:
+
+After installation, you can:
+
+```bash
+# Access your Laravel application
+# Open browser to http://localhost
+
+# Navigate to Laravel directory
+cd /var/www/laravel
+
+# Run Artisan commands
+php artisan migrate              # Run database migrations
+php artisan make:controller      # Create a controller
+php artisan make:model User      # Create a model
+php artisan make:migration       # Create a migration
+php artisan route:list           # List all routes
+php artisan tinker               # Interactive REPL
+php artisan serve                # Start development server (port 8000)
+
+# Install and compile frontend assets
+npm install                      # Install Node dependencies
+npm run dev                      # Compile assets (development)
+npm run build                    # Build assets (production)
+npm run watch                    # Watch and recompile on changes
+
+# Composer commands
+composer install                 # Install PHP dependencies
+composer update                  # Update dependencies
+composer require package/name    # Install new package
+composer dump-autoload           # Regenerate autoload files
+
+# Database operations
+php artisan migrate              # Run migrations
+php artisan migrate:rollback     # Rollback last migration
+php artisan migrate:fresh        # Drop all tables and re-run migrations
+php artisan db:seed              # Run database seeders
+
+# Cache management
+php artisan cache:clear          # Clear application cache
+php artisan config:clear         # Clear configuration cache
+php artisan route:clear          # Clear route cache
+php artisan view:clear           # Clear compiled views
+php artisan optimize             # Cache config, routes, and views
+
+# Check service status
+sudo systemctl status php8.3-fpm
+sudo systemctl status nginx
+sudo systemctl status mysql
+
+# View logs
+tail -f /var/www/laravel/storage/logs/laravel.log
+sudo tail -f /var/log/nginx/error.log
+```
+
+**Production-Specific Commands:**
+```bash
+# Queue worker management (production only)
+sudo supervisorctl status                    # Check worker status
+sudo supervisorctl restart laravel-worker:*  # Restart workers
+sudo supervisorctl stop laravel-worker:*     # Stop workers
+sudo supervisorctl start laravel-worker:*    # Start workers
+sudo tail -f /var/www/laravel/storage/logs/worker.log  # View worker logs
+
+# Laravel Scheduler (automatically configured in cron)
+crontab -l                       # Verify scheduler cron job exists
+
+# Deploy new code (production)
+cd /var/www/laravel
+git pull origin main
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+php artisan migrate --force
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+sudo supervisorctl restart laravel-worker:*
+```
+
+**Production Best Practices:**
+```bash
+# Set up SSL with Let's Encrypt
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d yourdomain.com
+
+# Configure your domain in Nginx
+sudo nano /etc/nginx/sites-available/laravel
+# Change server_name from localhost to your domain
+sudo nginx -t
+sudo systemctl reload nginx
+
+# Set up Redis for caching and sessions
+sudo apt install redis-server
+# Update .env:
+# CACHE_DRIVER=redis
+# SESSION_DRIVER=redis
+# QUEUE_CONNECTION=redis
+
+# Database backups
+mysqldump -u root -p laravel > backup_$(date +%Y%m%d).sql
+
+# Monitor application
+# Install Laravel Telescope (development) or Horizon (production)
+composer require laravel/horizon
+php artisan horizon:install
+php artisan migrate
+
+# Set up firewall
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+```
+
 ## Individual Stack Installation
 
 You can also run individual stack installers directly:
@@ -406,10 +579,17 @@ sudo ./install-observability.sh development
 # Observability Stack - Production
 sudo ./install-observability.sh production
 
+# Laravel Stack - Development (default)
+sudo ./install-laravel.sh development
+
+# Laravel Stack - Production
+sudo ./install-laravel.sh production
+
 # If no argument provided, defaults to development
 sudo ./install-mern.sh
 sudo ./install-docker.sh
 sudo ./install-observability.sh
+sudo ./install-laravel.sh
 ```
 
 ## Troubleshooting
@@ -645,6 +825,197 @@ sudo netstat -tlnp | grep -E '3000|9090|3100|9100|9080'
 # - Loki: /etc/loki/loki-config.yml (http_listen_port)
 ```
 
+### Laravel application not accessible
+If you can't access your Laravel app at http://localhost:
+```bash
+# Check if Nginx is running
+sudo systemctl status nginx
+
+# Check if PHP-FPM is running
+sudo systemctl status php8.3-fpm
+
+# Test Nginx configuration
+sudo nginx -t
+
+# Check Nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# Check Laravel logs
+tail -f /var/www/laravel/storage/logs/laravel.log
+
+# Restart services
+sudo systemctl restart php8.3-fpm
+sudo systemctl restart nginx
+
+# Verify permissions
+sudo chown -R $USER:www-data /var/www/laravel
+sudo chmod -R 775 /var/www/laravel/storage
+sudo chmod -R 775 /var/www/laravel/bootstrap/cache
+```
+
+### Composer not found
+If composer command is not recognized:
+```bash
+# Check if composer is installed
+which composer
+
+# If not found, reinstall
+cd /tmp
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+rm composer-setup.php
+
+# Verify installation
+composer --version
+```
+
+### PHP artisan commands fail
+If artisan commands don't work:
+```bash
+# Check PHP version
+php --version
+
+# Verify you're in Laravel directory
+cd /var/www/laravel
+
+# Clear all caches
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+
+# Regenerate autoload
+composer dump-autoload
+
+# Check file permissions
+ls -la storage/ bootstrap/cache/
+```
+
+### Database connection errors
+If Laravel can't connect to MySQL:
+```bash
+# Check MySQL is running
+sudo systemctl status mysql
+
+# Test MySQL connection
+mysql -u laravel -p
+# Enter password (dev: laravel, prod: check ~/laravel-credentials.txt)
+
+# Verify database exists
+mysql -u root -p -e "SHOW DATABASES;"
+
+# Check .env database settings
+cat /var/www/laravel/.env | grep DB_
+
+# Update .env if needed
+cd /var/www/laravel
+nano .env
+# Verify: DB_CONNECTION=mysql, DB_HOST=127.0.0.1, DB_PORT=3306
+# DB_DATABASE=laravel, DB_USERNAME=laravel, DB_PASSWORD=<correct-password>
+
+# Clear config cache after .env changes
+php artisan config:clear
+```
+
+### Lost MySQL credentials (Production)
+If you lost Laravel database credentials:
+```bash
+# Check saved credentials
+cat ~/laravel-credentials.txt
+
+# Or reset MySQL laravel user password
+sudo mysql -u root -p
+ALTER USER 'laravel'@'localhost' IDENTIFIED BY 'newpassword';
+FLUSH PRIVILEGES;
+exit
+
+# Update .env with new password
+nano /var/www/laravel/.env
+php artisan config:clear
+```
+
+### Nginx 502 Bad Gateway
+If you get a 502 error:
+```bash
+# Check if PHP-FPM socket exists
+ls -la /var/run/php/php8.3-fpm.sock
+
+# Check PHP-FPM is running
+sudo systemctl status php8.3-fpm
+
+# Check PHP-FPM error logs
+sudo tail -f /var/log/php8.3-fpm.log
+
+# Restart PHP-FPM
+sudo systemctl restart php8.3-fpm
+
+# Check Nginx config points to correct socket
+grep fastcgi_pass /etc/nginx/sites-available/laravel
+# Should show: fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+```
+
+### Queue workers not processing jobs (Production)
+If jobs aren't being processed:
+```bash
+# Check supervisor status
+sudo supervisorctl status
+
+# Check worker logs
+sudo tail -f /var/www/laravel/storage/logs/worker.log
+
+# Restart workers
+sudo supervisorctl restart laravel-worker:*
+
+# If supervisor config is missing, recreate it
+sudo nano /etc/supervisor/conf.d/laravel-worker.conf
+sudo supervisorctl reread
+sudo supervisorctl update
+```
+
+### Laravel scheduler not running (Production)
+If scheduled tasks aren't executing:
+```bash
+# Verify cron job exists
+crontab -l
+
+# Should see: * * * * * cd /var/www/laravel && php artisan schedule:run
+
+# If missing, add it
+(crontab -l 2>/dev/null; echo "* * * * * cd /var/www/laravel && php artisan schedule:run >> /dev/null 2>&1") | crontab -
+
+# Test scheduler manually
+cd /var/www/laravel
+php artisan schedule:run
+
+# Check Laravel logs for scheduler output
+tail -f storage/logs/laravel.log
+```
+
+### Frontend assets not compiling
+If npm commands fail:
+```bash
+# Check Node.js is installed
+node --version
+npm --version
+
+# If not found, reload shell
+source ~/.bashrc
+
+# Or reinstall via NVM
+source ~/.nvm/nvm.sh
+nvm install --lts
+nvm use --lts
+
+# Install dependencies
+cd /var/www/laravel
+npm install
+
+# Clear npm cache if needed
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
 ## Contributing
 
 Contributions are welcome! If you'd like to add support for additional stacks:
@@ -666,6 +1037,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Docker installation via official Docker repositories
 - Docker management tools: [lazydocker](https://github.com/jesseduffield/lazydocker), [ctop](https://github.com/bcicen/ctop), [dive](https://github.com/wagoodman/dive)
 - Observability stack: [Prometheus](https://prometheus.io/), [Grafana](https://grafana.com/), [Loki](https://grafana.com/oss/loki/), [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/), [Node Exporter](https://github.com/prometheus/node_exporter)
+- Laravel stack: [Laravel](https://laravel.com/), [PHP](https://www.php.net/), [Composer](https://getcomposer.org/), [Nginx](https://nginx.org/), [MySQL](https://www.mysql.com/), [Supervisor](http://supervisord.org/)
 - Inspired by the need for quick development environment setup
 
 ## Support
