@@ -4,11 +4,11 @@ Automated installation scripts for popular development stacks on Linux systems.
 
 ## Overview
 
-This repository contains bash scripts to quickly set up various development environments. Simply run the main installer and choose the stack you want to install.
+This repository contains bash scripts to quickly set up and remove various development environments. Simply run the main installer to choose a stack to install, or run the uninstaller to safely remove installed stacks.
 
 ## Features
 
-- Interactive menu-based installation
+- Interactive menu-based installation and uninstallation
 - **Environment selection** (Development vs Production)
 - Automated dependency management
 - Latest package versions
@@ -18,6 +18,7 @@ This repository contains bash scripts to quickly set up various development envi
 - PM2 process manager for production deployments
 - Color-coded output for better readability
 - Error handling and verification
+- **Safe uninstallers** with double confirmation and data backup reminders
 
 ## Available Stacks
 
@@ -590,6 +591,132 @@ sudo ./install-mern.sh
 sudo ./install-docker.sh
 sudo ./install-observability.sh
 sudo ./install-laravel.sh
+```
+
+## Uninstalling Stacks
+
+If you need to remove an installed stack, use the provided uninstaller scripts. The uninstallers will safely remove all components, configurations, and data associated with each stack.
+
+### Using the Main Uninstaller Menu
+
+```bash
+# Run the main uninstaller
+sudo ./uninstall.sh
+
+# You'll see a menu with options:
+# 1) MERN Stack
+# 2) Docker
+# 3) Observability Stack
+# 4) Laravel Stack
+# 0) Exit
+```
+
+### Individual Stack Uninstallation
+
+You can also run individual uninstaller scripts directly:
+
+```bash
+# Uninstall MERN Stack
+sudo ./uninstall-mern.sh
+# Removes: MongoDB, global npm packages
+# Keeps: Node.js, NVM (may be used by other apps)
+
+# Uninstall Docker
+sudo ./uninstall-docker.sh
+# Removes: Docker Engine, all containers, images, volumes, networks
+# Removes: Docker Compose, management tools (lazydocker, ctop, dive)
+
+# Uninstall Observability Stack
+sudo ./uninstall-observability.sh
+# Removes: Prometheus, Grafana, Loki, Promtail, Node Exporter
+# Removes: All metrics and log data
+
+# Uninstall Laravel Stack
+sudo ./uninstall-laravel.sh
+# Removes: PHP 8.3, Composer, Nginx, Laravel project
+# Optional: MySQL (prompts before removal), Supervisor
+```
+
+### What Each Uninstaller Does
+
+#### MERN Stack Uninstaller
+- Stops and removes MongoDB service
+- Removes MongoDB packages and repositories
+- Deletes all MongoDB databases and data
+- Removes global npm packages (create-react-app, nodemon, pm2, express-generator)
+- Removes MongoDB credentials file
+- **Keeps:** Node.js and NVM (can be removed manually if needed)
+
+#### Docker Uninstaller
+- Lists current containers, images, and volumes
+- Stops all running containers
+- Removes all containers, images, volumes, and networks
+- Removes Docker Engine and all related packages
+- Removes Docker Compose (plugin and standalone)
+- Removes management tools (lazydocker, ctop, dive)
+- Removes user from docker group
+- Deletes Docker data directories (/var/lib/docker, /etc/docker)
+
+#### Observability Stack Uninstaller
+- Stops all observability services
+- Removes Prometheus and all metrics data
+- Removes Grafana and all dashboards
+- Removes Loki and all log data
+- Removes Promtail and Node Exporter
+- Removes system users (prometheus, grafana, loki, promtail)
+- Removes all configuration files
+- Removes credentials file
+
+#### Laravel Stack Uninstaller
+- Stops all services (Nginx, PHP-FPM, MySQL, Supervisor)
+- Removes Laravel project directory (/var/www/laravel)
+- Removes Nginx configuration
+- Drops Laravel database and user from MySQL
+- Removes PHP 8.3 and all extensions
+- Removes Composer
+- Removes Nginx
+- Removes Laravel scheduler cron job
+- Removes Supervisor configuration
+- **Prompts before removing:** MySQL server, Supervisor
+- Removes credentials file
+- **Keeps:** Node.js and NVM (may be used by other apps)
+
+### Safety Features
+
+All uninstallers include multiple safety measures:
+
+1. **Double Confirmation:** Requires typing 'yes' and then 'DELETE' to proceed
+2. **Clear Warnings:** Shows exactly what will be removed
+3. **Data Backup Reminder:** Some uninstallers remind you to backup data
+4. **Selective Removal:** Optional removal of shared components (MySQL, Supervisor)
+5. **Detailed Output:** Shows progress of each removal step
+6. **Error Handling:** Continues even if some components are already removed
+
+### Important Notes
+
+**Before Uninstalling:**
+- Backup any important data (databases, projects, configurations)
+- Note down any custom configurations you want to preserve
+- Export Grafana dashboards if needed
+- Backup Docker volumes if they contain important data
+
+**After Uninstalling:**
+- Some uninstallers may require a logout/login for changes to take effect
+- Shared components (Node.js, MySQL) may be kept if used by other stacks
+- You can reinstall any stack at any time using the main installer
+
+**Manual Cleanup (if needed):**
+```bash
+# Remove Node.js and NVM manually (if no longer needed)
+rm -rf ~/.nvm
+# Then remove NVM lines from ~/.bashrc
+
+# Remove MySQL manually (if kept during Laravel uninstall)
+sudo apt-get remove --purge mysql-server mysql-client
+sudo rm -rf /etc/mysql /var/lib/mysql
+
+# Remove Supervisor manually (if kept during Laravel uninstall)
+sudo apt-get remove --purge supervisor
 ```
 
 ## Troubleshooting
