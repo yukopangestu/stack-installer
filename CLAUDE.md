@@ -10,17 +10,18 @@ Stack Installer is an interactive bash-based installation system for development
 
 ### Three-Layer Structure
 
-1. **Main Menu (`install.sh`)**
-   - Entry point for all installations
-   - Displays interactive menu with 9 stack options (currently 2 implemented: MERN, Docker)
-   - Handles environment selection (development/production)
-   - Invokes individual stack installers with environment parameter
+1. **Main Menus (`install.sh` and `uninstall.sh`)**
+   - Entry points for installations and uninstallations
+   - Display interactive menus with stack options
+   - Handle environment selection (development/production) for installers
+   - Invoke individual stack scripts with environment parameter
 
-2. **Stack Installers (`install-*.sh`)**
-   - Individual installation scripts for each stack
-   - Accept environment parameter: `development` (default) or `production`
+2. **Stack Scripts (`installers/` and `uninstallers/`)**
+   - Individual installation/uninstallation scripts for each stack
+   - Installers accept environment parameter: `development` (default) or `production`
    - Must be executable (`chmod +x`)
    - Follow consistent structure with colored output functions
+   - Located in organized subdirectories
 
 3. **Environment-Based Configuration**
    - Development: Dev tools, no authentication, verbose logging, easier debugging
@@ -30,46 +31,81 @@ Stack Installer is an interactive bash-based installation system for development
 
 ```bash
 # Main menu calls stack installer with environment
-bash "$SCRIPT_DIR/install-<stack>.sh" "$INSTALL_ENV"
+bash "$SCRIPT_DIR/installers/install-<stack>.sh" "$INSTALL_ENV"
 
 # Stack installer receives environment as first argument
 INSTALL_ENV=${1:-development}
+
+# Main menu calls stack uninstaller
+bash "$SCRIPT_DIR/uninstallers/uninstall-<stack>.sh"
 ```
 
 ## File Structure
 
 ```
-install.sh              # Main interactive menu
-install-mern.sh         # MERN stack installer
-install-docker.sh       # Docker installer
-README.md               # User documentation
-LICENSE                 # MIT License
+stack-installer/
+├── README.md                   # User documentation
+├── LICENSE                     # MIT License
+├── CLAUDE.md                   # This file - development guidelines
+├── install.sh                  # Main installer menu
+├── uninstall.sh                # Main uninstaller menu
+├── installers/                 # Installation scripts directory
+│   ├── install-mern.sh         # MERN stack installer
+│   ├── install-docker.sh       # Docker installer
+│   ├── install-observability.sh # Observability stack installer
+│   └── install-laravel.sh      # Laravel stack installer
+└── uninstallers/               # Uninstallation scripts directory
+    ├── uninstall-mern.sh       # MERN stack uninstaller
+    ├── uninstall-docker.sh     # Docker uninstaller
+    ├── uninstall-observability.sh # Observability stack uninstaller
+    └── uninstall-laravel.sh    # Laravel stack uninstaller
 ```
 
 ## Testing the Scripts
 
 ### Syntax Check (No Installation)
 ```bash
+# Check main menus
 bash -n install.sh
-bash -n install-mern.sh
-bash -n install-docker.sh
+bash -n uninstall.sh
+
+# Check installers
+bash -n installers/install-mern.sh
+bash -n installers/install-docker.sh
+bash -n installers/install-observability.sh
+bash -n installers/install-laravel.sh
+
+# Check uninstallers
+bash -n uninstallers/uninstall-mern.sh
+bash -n uninstallers/uninstall-docker.sh
+bash -n uninstallers/uninstall-observability.sh
+bash -n uninstallers/uninstall-laravel.sh
 ```
 
 ### Interactive Menu Test
 ```bash
+# Test installer menu
 sudo ./install.sh
 # Press 0 to exit without installing
+
+# Test uninstaller menu
+sudo ./uninstall.sh
+# Press 0 to exit without uninstalling
 ```
 
 ### Direct Stack Installation
 ```bash
 # Development (default)
-sudo ./install-mern.sh
-sudo ./install-docker.sh
+sudo ./installers/install-mern.sh
+sudo ./installers/install-docker.sh
+sudo ./installers/install-observability.sh
+sudo ./installers/install-laravel.sh
 
 # Production
-sudo ./install-mern.sh production
-sudo ./install-docker.sh production
+sudo ./installers/install-mern.sh production
+sudo ./installers/install-docker.sh production
+sudo ./installers/install-observability.sh production
+sudo ./installers/install-laravel.sh production
 ```
 
 ### Testing Environment
@@ -82,9 +118,9 @@ sudo ./install-docker.sh production
 ### 1. Create Stack Installer Script
 
 ```bash
-# Create new file: install-<stackname>.sh
-touch install-<stackname>.sh
-chmod +x install-<stackname>.sh
+# Create new file in installers directory: installers/install-<stackname>.sh
+touch installers/install-<stackname>.sh
+chmod +x installers/install-<stackname>.sh
 ```
 
 ### 2. Required Script Structure
@@ -140,10 +176,10 @@ install_yourstack() {
     if confirm_installation "Your Stack Name"; then
         print_header "Starting Your Stack Installation..."
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-yourstack.sh" ]; then
-            bash "$SCRIPT_DIR/install-yourstack.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-yourstack.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-yourstack.sh" "$INSTALL_ENV"
         else
-            print_error "install-yourstack.sh not found in $SCRIPT_DIR"
+            print_error "install-yourstack.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi

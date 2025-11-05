@@ -79,6 +79,12 @@ display_menu() {
     echo -e "  ${GREEN}9)${NC} Docker"
     echo -e "     ${YELLOW}→${NC} Docker Engine + Docker Compose + Container Tools"
     echo ""
+    echo -e "  ${GREEN}10)${NC} Observability Stack"
+    echo -e "     ${YELLOW}→${NC} Prometheus + Grafana + Loki + Node Exporter (Monitoring & Logging)"
+    echo ""
+    echo -e "  ${GREEN}11)${NC} Laravel Stack"
+    echo -e "     ${YELLOW}→${NC} PHP + Composer + MySQL + Nginx + Laravel Framework"
+    echo ""
     echo -e "  ${RED}0)${NC} Exit"
     echo ""
     echo -e "${CYAN}═══════════════════════════════════════════════════════${NC}"
@@ -149,10 +155,10 @@ install_mern() {
 
         # Check if install-mern.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-mern.sh" ]; then
-            bash "$SCRIPT_DIR/install-mern.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-mern.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-mern.sh" "$INSTALL_ENV"
         else
-            print_error "install-mern.sh not found in $SCRIPT_DIR"
+            print_error "install-mern.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi
@@ -169,10 +175,50 @@ install_docker() {
 
         # Check if install-docker.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-docker.sh" ]; then
-            bash "$SCRIPT_DIR/install-docker.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-docker.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-docker.sh" "$INSTALL_ENV"
         else
-            print_error "install-docker.sh not found in $SCRIPT_DIR"
+            print_error "install-docker.sh not found in $SCRIPT_DIR/installers"
+            exit 1
+        fi
+    fi
+}
+
+# Function to install Observability Stack
+install_observability() {
+    # Select environment type first
+    select_environment
+
+    if confirm_installation "Observability Stack"; then
+        print_header "Starting Observability Stack Installation..."
+        echo ""
+
+        # Check if install-observability.sh exists
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        if [ -f "$SCRIPT_DIR/installers/install-observability.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-observability.sh" "$INSTALL_ENV"
+        else
+            print_error "install-observability.sh not found in $SCRIPT_DIR/installers"
+            exit 1
+        fi
+    fi
+}
+
+# Function to install Laravel Stack
+install_laravel() {
+    # Select environment type first
+    select_environment
+
+    if confirm_installation "Laravel Stack"; then
+        print_header "Starting Laravel Stack Installation..."
+        echo ""
+
+        # Check if install-laravel.sh exists
+        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+        if [ -f "$SCRIPT_DIR/installers/install-laravel.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-laravel.sh" "$INSTALL_ENV"
+        else
+            print_error "install-laravel.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi
@@ -191,7 +237,7 @@ while true; do
     display_banner
     display_menu
 
-    read -p "Enter your choice [0-9]: " choice
+    read -p "Enter your choice [0-11]: " choice
 
     case $choice in
         1)
@@ -221,6 +267,12 @@ while true; do
         9)
             install_docker
             ;;
+        10)
+            install_observability
+            ;;
+        11)
+            install_laravel
+            ;;
         0)
             echo ""
             print_success "Thank you for using Stack Installer!"
@@ -229,7 +281,7 @@ while true; do
             ;;
         *)
             echo ""
-            print_error "Invalid choice. Please enter a number between 0 and 9."
+            print_error "Invalid choice. Please enter a number between 0 and 11."
             echo ""
             sleep 2
             ;;
