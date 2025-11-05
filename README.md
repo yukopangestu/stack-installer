@@ -35,6 +35,13 @@ This repository contains bash scripts to quickly set up various development envi
    - Docker Compose Standalone
    - Container management tools (ctop, dive, lazydocker)
 
+10. **Observability Stack** ✅
+   - Prometheus (metrics collection)
+   - Grafana (visualization & dashboards)
+   - Loki (log aggregation)
+   - Promtail (log shipper)
+   - Node Exporter (system metrics)
+
 ### Coming Soon:
 
 2. **MEAN Stack** - MongoDB + Express.js + Angular + Node.js
@@ -259,6 +266,123 @@ docker scan <image>          # Scan image for vulnerabilities (production)
 
 **Important:** After installation, log out and log back in for group permissions to take effect. Then test with: `docker run hello-world`
 
+## Observability Stack Details
+
+The Observability Stack installer (`install-observability.sh`) provides a complete monitoring and logging solution with different configurations based on your environment choice:
+
+### Core Components (Both Environments):
+- **Prometheus**: Metrics collection and time-series database
+- **Grafana**: Visualization and dashboard platform
+- **Loki**: Log aggregation system
+- **Promtail**: Log shipper that collects and sends logs to Loki
+- **Node Exporter**: System metrics exporter for Prometheus
+
+### Development Environment:
+**Configuration:**
+- Grafana: Simple authentication (admin/admin)
+- Anonymous access: ENABLED (easier testing)
+- Prometheus retention: 15 days
+- Loki retention: 7 days
+- Default settings for quick local setup
+
+**Access:**
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+- Node Exporter: http://localhost:9100/metrics
+
+### Production Environment:
+**Configuration:**
+- Grafana: Strong auto-generated admin password
+- Anonymous access: DISABLED
+- User sign-up: DISABLED
+- Prometheus retention: 30 days
+- Loki retention: 30 days
+- Security hardened settings
+- Credentials saved to `~/observability-credentials.txt`
+
+**Security Features:**
+- Strong password generation (24-character random)
+- Cookie security enabled
+- Strict transport security
+- Gravatar disabled
+- User registration disabled
+- Secure credential storage (chmod 600)
+
+### Post-Installation:
+
+After installation, you can:
+
+```bash
+# Check service status
+sudo systemctl status prometheus
+sudo systemctl status grafana-server
+sudo systemctl status loki
+sudo systemctl status promtail
+sudo systemctl status node_exporter
+
+# View service logs
+sudo journalctl -u prometheus -f
+sudo journalctl -u grafana-server -f
+sudo journalctl -u loki -f
+
+# Access Grafana (default)
+# Open browser to http://localhost:3000
+# Development: Login with admin/admin
+# Production: Use credentials from ~/observability-credentials.txt
+
+# Access Prometheus
+# Open browser to http://localhost:9090
+# Try queries like:
+#   - up (see all targets)
+#   - node_cpu_seconds_total (CPU metrics)
+#   - rate(node_network_receive_bytes_total[5m]) (network traffic)
+
+# Import recommended Grafana dashboards:
+# 1. Log in to Grafana
+# 2. Go to Dashboards -> Import
+# 3. Import these popular dashboards:
+#    - Node Exporter Full: Dashboard ID 1860
+#    - Loki Logs Dashboard: Dashboard ID 13639
+#    - Prometheus 2.0 Stats: Dashboard ID 3662
+
+# Configure alerts in Prometheus
+sudo nano /etc/prometheus/prometheus.yml
+sudo systemctl restart prometheus
+
+# Add more scrape targets
+sudo nano /etc/prometheus/prometheus.yml
+# Add your custom jobs under scrape_configs
+sudo systemctl restart prometheus
+
+# Configure log sources in Promtail
+sudo nano /etc/promtail/promtail-config.yml
+sudo systemctl restart promtail
+```
+
+**Production Best Practices:**
+```bash
+# Change Grafana admin password (production)
+# 1. Log in to Grafana
+# 2. Go to Configuration -> Users -> admin
+# 3. Change password
+
+# Set up SSL/TLS with reverse proxy (nginx/caddy)
+# Configure firewall
+sudo ufw allow 3000/tcp  # Grafana
+sudo ufw allow 9090/tcp  # Prometheus (optional, internal only)
+
+# Back up Grafana data
+sudo tar -czf grafana-backup.tar.gz /var/lib/grafana
+
+# Back up Prometheus data
+sudo tar -czf prometheus-backup.tar.gz /var/lib/prometheus
+
+# Monitor disk usage (important for metrics/logs)
+df -h
+du -sh /var/lib/prometheus
+du -sh /var/lib/loki
+```
+
 ## Individual Stack Installation
 
 You can also run individual stack installers directly:
@@ -276,9 +400,16 @@ sudo ./install-docker.sh development
 # Docker - Production
 sudo ./install-docker.sh production
 
+# Observability Stack - Development (default)
+sudo ./install-observability.sh development
+
+# Observability Stack - Production
+sudo ./install-observability.sh production
+
 # If no argument provided, defaults to development
 sudo ./install-mern.sh
 sudo ./install-docker.sh
+sudo ./install-observability.sh
 ```
 
 ## Troubleshooting
@@ -394,6 +525,126 @@ wget https://github.com/wagoodman/dive/releases/download/v0.11.0/dive_0.11.0_lin
 sudo dpkg -i dive_0.11.0_linux_amd64.deb
 ```
 
+### Grafana not accessible
+If you can't access Grafana at http://localhost:3000:
+```bash
+# Check if Grafana is running
+sudo systemctl status grafana-server
+
+# Start Grafana if not running
+sudo systemctl start grafana-server
+
+# Check Grafana logs
+sudo journalctl -u grafana-server -n 50
+
+# Verify port 3000 is listening
+sudo netstat -tlnp | grep 3000
+# or
+sudo ss -tlnp | grep 3000
+
+# Restart Grafana
+sudo systemctl restart grafana-server
+```
+
+### Prometheus not collecting metrics
+If Prometheus shows targets as down:
+```bash
+# Check Prometheus status
+sudo systemctl status prometheus
+
+# Check Prometheus logs
+sudo journalctl -u prometheus -n 50
+
+# Verify targets in Prometheus UI
+# Open http://localhost:9090/targets
+# All targets should show "UP"
+
+# Check configuration syntax
+promtool check config /etc/prometheus/prometheus.yml
+
+# Restart Prometheus
+sudo systemctl restart prometheus
+
+# Verify Node Exporter is running
+sudo systemctl status node_exporter
+curl http://localhost:9100/metrics
+```
+
+### Loki/Promtail not working
+If logs aren't appearing in Grafana:
+```bash
+# Check Loki status
+sudo systemctl status loki
+sudo journalctl -u loki -n 50
+
+# Check Promtail status
+sudo systemctl status promtail
+sudo journalctl -u promtail -n 50
+
+# Test Loki API
+curl http://localhost:3100/ready
+
+# Verify Promtail is shipping logs
+curl http://localhost:9080/metrics | grep promtail_sent_entries_total
+
+# Restart services
+sudo systemctl restart loki
+sudo systemctl restart promtail
+```
+
+### Lost Grafana credentials (Production)
+If you lost the admin password:
+```bash
+# Check saved credentials
+cat ~/observability-credentials.txt
+
+# Reset Grafana admin password
+sudo grafana-cli admin reset-admin-password newpassword123
+
+# Or reset via SQLite database
+sudo systemctl stop grafana-server
+sudo sqlite3 /var/lib/grafana/grafana.db "UPDATE user SET password = '59acf18b94d7eb0694c61e60ce44c110c7a683ac6a8f09580d626f90f4a242000746579358d77dd9e570e83fa24faa88a8a6', salt = 'F3FAxVm33R' WHERE login = 'admin';"
+sudo systemctl start grafana-server
+# New password is: admin
+```
+
+### Disk space issues with metrics/logs
+If Prometheus or Loki is consuming too much disk:
+```bash
+# Check disk usage
+df -h
+du -sh /var/lib/prometheus
+du -sh /var/lib/loki
+
+# Adjust Prometheus retention (edit and restart)
+sudo nano /etc/systemd/system/prometheus.service
+# Change --storage.tsdb.retention.time value
+sudo systemctl daemon-reload
+sudo systemctl restart prometheus
+
+# Adjust Loki retention (edit and restart)
+sudo nano /etc/loki/loki-config.yml
+# Change retention_period under limits_config
+sudo systemctl restart loki
+
+# Manually clean old data (use with caution)
+sudo systemctl stop prometheus
+sudo rm -rf /var/lib/prometheus/data
+sudo systemctl start prometheus
+```
+
+### Port conflicts
+If ports 3000, 9090, 3100, 9100, or 9080 are already in use:
+```bash
+# Check what's using the ports
+sudo netstat -tlnp | grep -E '3000|9090|3100|9100|9080'
+
+# Stop conflicting services or change ports in config files:
+# - Grafana: /etc/grafana/grafana.ini (http_port)
+# - Prometheus: /etc/systemd/system/prometheus.service (--web.listen-address)
+# - Loki: /etc/loki/loki-config.yml (http_listen_port)
+```
+
 ## Contributing
 
 Contributions are welcome! If you'd like to add support for additional stacks:
@@ -414,6 +665,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - MongoDB installation via official repositories
 - Docker installation via official Docker repositories
 - Docker management tools: [lazydocker](https://github.com/jesseduffield/lazydocker), [ctop](https://github.com/bcicen/ctop), [dive](https://github.com/wagoodman/dive)
+- Observability stack: [Prometheus](https://prometheus.io/), [Grafana](https://grafana.com/), [Loki](https://grafana.com/oss/loki/), [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/), [Node Exporter](https://github.com/prometheus/node_exporter)
 - Inspired by the need for quick development environment setup
 
 ## Support
