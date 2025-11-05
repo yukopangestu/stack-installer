@@ -155,10 +155,10 @@ install_mern() {
 
         # Check if install-mern.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-mern.sh" ]; then
-            bash "$SCRIPT_DIR/install-mern.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-mern.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-mern.sh" "$INSTALL_ENV"
         else
-            print_error "install-mern.sh not found in $SCRIPT_DIR"
+            print_error "install-mern.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi
@@ -175,10 +175,10 @@ install_docker() {
 
         # Check if install-docker.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-docker.sh" ]; then
-            bash "$SCRIPT_DIR/install-docker.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-docker.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-docker.sh" "$INSTALL_ENV"
         else
-            print_error "install-docker.sh not found in $SCRIPT_DIR"
+            print_error "install-docker.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi
@@ -195,10 +195,10 @@ install_observability() {
 
         # Check if install-observability.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-observability.sh" ]; then
-            bash "$SCRIPT_DIR/install-observability.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-observability.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-observability.sh" "$INSTALL_ENV"
         else
-            print_error "install-observability.sh not found in $SCRIPT_DIR"
+            print_error "install-observability.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi
@@ -215,10 +215,10 @@ install_laravel() {
 
         # Check if install-laravel.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/install-laravel.sh" ]; then
-            bash "$SCRIPT_DIR/install-laravel.sh" "$INSTALL_ENV"
+        if [ -f "$SCRIPT_DIR/installers/install-laravel.sh" ]; then
+            bash "$SCRIPT_DIR/installers/install-laravel.sh" "$INSTALL_ENV"
         else
-            print_error "install-laravel.sh not found in $SCRIPT_DIR"
+            print_error "install-laravel.sh not found in $SCRIPT_DIR/installers"
             exit 1
         fi
     fi

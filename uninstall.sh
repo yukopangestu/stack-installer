@@ -96,10 +96,10 @@ uninstall_mern() {
 
         # Check if uninstall-mern.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/uninstall-mern.sh" ]; then
-            bash "$SCRIPT_DIR/uninstall-mern.sh"
+        if [ -f "$SCRIPT_DIR/uninstallers/uninstall-mern.sh" ]; then
+            bash "$SCRIPT_DIR/uninstallers/uninstall-mern.sh"
         else
-            print_error "uninstall-mern.sh not found in $SCRIPT_DIR"
+            print_error "uninstall-mern.sh not found in $SCRIPT_DIR/uninstallers"
             exit 1
         fi
     fi
@@ -113,10 +113,10 @@ uninstall_docker() {
 
         # Check if uninstall-docker.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/uninstall-docker.sh" ]; then
-            bash "$SCRIPT_DIR/uninstall-docker.sh"
+        if [ -f "$SCRIPT_DIR/uninstallers/uninstall-docker.sh" ]; then
+            bash "$SCRIPT_DIR/uninstallers/uninstall-docker.sh"
         else
-            print_error "uninstall-docker.sh not found in $SCRIPT_DIR"
+            print_error "uninstall-docker.sh not found in $SCRIPT_DIR/uninstallers"
             exit 1
         fi
     fi
@@ -130,10 +130,10 @@ uninstall_observability() {
 
         # Check if uninstall-observability.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/uninstall-observability.sh" ]; then
-            bash "$SCRIPT_DIR/uninstall-observability.sh"
+        if [ -f "$SCRIPT_DIR/uninstallers/uninstall-observability.sh" ]; then
+            bash "$SCRIPT_DIR/uninstallers/uninstall-observability.sh"
         else
-            print_error "uninstall-observability.sh not found in $SCRIPT_DIR"
+            print_error "uninstall-observability.sh not found in $SCRIPT_DIR/uninstallers"
             exit 1
         fi
     fi
@@ -147,10 +147,10 @@ uninstall_laravel() {
 
         # Check if uninstall-laravel.sh exists
         SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-        if [ -f "$SCRIPT_DIR/uninstall-laravel.sh" ]; then
-            bash "$SCRIPT_DIR/uninstall-laravel.sh"
+        if [ -f "$SCRIPT_DIR/uninstallers/uninstall-laravel.sh" ]; then
+            bash "$SCRIPT_DIR/uninstallers/uninstall-laravel.sh"
         else
-            print_error "uninstall-laravel.sh not found in $SCRIPT_DIR"
+            print_error "uninstall-laravel.sh not found in $SCRIPT_DIR/uninstallers"
             exit 1
         fi
     fi

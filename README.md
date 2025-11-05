@@ -67,6 +67,27 @@ This repository contains bash scripts to quickly set up and remove various devel
 - `sudo` privileges
 - Internet connection
 
+## File Structure
+
+```
+stack-installer/
+├── README.md                   # This file
+├── LICENSE                     # MIT License
+├── CLAUDE.md                   # Development guidelines
+├── install.sh                  # Main installer menu
+├── uninstall.sh                # Main uninstaller menu
+├── installers/                 # Installation scripts
+│   ├── install-mern.sh
+│   ├── install-docker.sh
+│   ├── install-observability.sh
+│   └── install-laravel.sh
+└── uninstallers/               # Uninstallation scripts
+    ├── uninstall-mern.sh
+    ├── uninstall-docker.sh
+    ├── uninstall-observability.sh
+    └── uninstall-laravel.sh
+```
+
 ## Installation
 
 ### Quick Start
@@ -563,34 +584,34 @@ You can also run individual stack installers directly:
 
 ```bash
 # MERN Stack - Development (default)
-sudo ./install-mern.sh development
+sudo ./installers/install-mern.sh development
 
 # MERN Stack - Production
-sudo ./install-mern.sh production
+sudo ./installers/install-mern.sh production
 
 # Docker - Development (default)
-sudo ./install-docker.sh development
+sudo ./installers/install-docker.sh development
 
 # Docker - Production
-sudo ./install-docker.sh production
+sudo ./installers/install-docker.sh production
 
 # Observability Stack - Development (default)
-sudo ./install-observability.sh development
+sudo ./installers/install-observability.sh development
 
 # Observability Stack - Production
-sudo ./install-observability.sh production
+sudo ./installers/install-observability.sh production
 
 # Laravel Stack - Development (default)
-sudo ./install-laravel.sh development
+sudo ./installers/install-laravel.sh development
 
 # Laravel Stack - Production
-sudo ./install-laravel.sh production
+sudo ./installers/install-laravel.sh production
 
 # If no argument provided, defaults to development
-sudo ./install-mern.sh
-sudo ./install-docker.sh
-sudo ./install-observability.sh
-sudo ./install-laravel.sh
+sudo ./installers/install-mern.sh
+sudo ./installers/install-docker.sh
+sudo ./installers/install-observability.sh
+sudo ./installers/install-laravel.sh
 ```
 
 ## Uninstalling Stacks
@@ -617,22 +638,22 @@ You can also run individual uninstaller scripts directly:
 
 ```bash
 # Uninstall MERN Stack
-sudo ./uninstall-mern.sh
+sudo ./uninstallers/uninstall-mern.sh
 # Removes: MongoDB, global npm packages
 # Keeps: Node.js, NVM (may be used by other apps)
 
 # Uninstall Docker
-sudo ./uninstall-docker.sh
+sudo ./uninstallers/uninstall-docker.sh
 # Removes: Docker Engine, all containers, images, volumes, networks
 # Removes: Docker Compose, management tools (lazydocker, ctop, dive)
 
 # Uninstall Observability Stack
-sudo ./uninstall-observability.sh
+sudo ./uninstallers/uninstall-observability.sh
 # Removes: Prometheus, Grafana, Loki, Promtail, Node Exporter
 # Removes: All metrics and log data
 
 # Uninstall Laravel Stack
-sudo ./uninstall-laravel.sh
+sudo ./uninstallers/uninstall-laravel.sh
 # Removes: PHP 8.3, Composer, Nginx, Laravel project
 # Optional: MySQL (prompts before removal), Supervisor
 ```
